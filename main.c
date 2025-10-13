@@ -1,9 +1,9 @@
 #include "raylib.h"
 
 struct ball {
-  int radius;
-  Vector2 pos;
-  Vector2 vel;
+  int radius;  // in pixels
+  Vector2 pos; // in pixels
+  Vector2 vel; // in pixels per second
 };
 
 int main() {
@@ -12,9 +12,12 @@ int main() {
   int screenWidth = 800;
   int screenHeight = 450;
 
-  float gravity = 9.81;
+  float ringRadius = 100.0;                    // in pixels
+  Vector2 ringPos = {.x = screenWidth / 2.0,   // in pixels
+                     .y = screenHeight / 2.0}; // in pixels
+  float gravity = 400;                         // in pixels per second squared
   struct ball purpleBall = {
-      .pos = {.x = screenWidth / 2.0, .y = screenHeight / 2.0},
+      .pos = {.x = ringPos.x, .y = ringPos.y - ringRadius},
       .vel = {0, 0},
       .radius = 10.0};
 
@@ -43,6 +46,7 @@ int main() {
     ClearBackground(RAYWHITE);
     DrawCircle(purpleBall.pos.x, purpleBall.pos.y, purpleBall.radius,
                DARKPURPLE);
+    DrawCircleLines(ringPos.x, ringPos.y, ringRadius, BLACK);
 
     EndDrawing();
     //----------------------------------------------------------------------------------
