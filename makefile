@@ -1,7 +1,8 @@
 # TODO learn how this make file works
 # Compiler and flags
 CC = clang
-CFLAGS = -Wall -std=c99 -O2
+CFLAGS = -Wall -std=c99 -O2 -lm
+DEBUG_FLAGS = -O0 -g
 
 # Raylib flags via pkg-config
 RAYLIB_FLAGS = $(shell pkg-config --cflags --libs raylib)
@@ -16,6 +17,11 @@ all:
 	mkdir -p $(OUTDIR)
 	$(CC) $(CFLAGS) $(SRC) -o $(OUT) $(RAYLIB_FLAGS)
 
+# Debug Build target
+debug:
+	mkdir -p $(OUTDIR)
+	$(CC) $(CFLAGS) $(SRC) -o $(OUT) $(RAYLIB_FLAGS) $(DEBUG_FLAGS)
+
 # Clean target
 clean:
-	rm -f $(OUTDIR)
+	rm -f -r $(OUTDIR)

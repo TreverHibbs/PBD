@@ -1,3 +1,7 @@
+#TODO decide on what build system I want to use. makfiles or cmake
+#I want to have good CI so I want all the information needed to compile
+#available in this repo. Therefore, I think I should go with CMAKE for
+#it's ability to automatically download dependencies.
 cmake_minimum_required(VERSION 3.11) # FetchContent is available in 3.11+
 project(PBD)
 
@@ -23,7 +27,7 @@ endif()
 
 # Our Project
 
-add_executable(${PROJECT_NAME} core_basic_window.c)
+add_executable(${PROJECT_NAME} main.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 
