@@ -1,11 +1,40 @@
 #include "raylib.h"
 #include "raymath.h"
 
+// Helper Functions
+//----------------------------------------------------------------------------------------------------
+float elasticityConstant = 1;
+float oneDimentionalCollisionEquation(float mass1, float velocity1, float mass2,
+                                      float velocity2);
+
+/**
+ * takes in a pair of ball masses and velocities and outputs the velocity of
+ * mass1 after a 1d collision
+ * @param mass1 the mass in kg of the ball that you want the resulting velocity
+ * of
+ * @param velocity1 the velocity in pixels/second of the ball that you want the
+ * resulting velocity of
+ * @param mass2 the mass in kg of the ball that you don't want the resulting
+ * velocity of
+ * @param velocity2 the velocity in pixels/second of the ball that you don't
+ * want the resulting velocity of
+ * @return the velocity of the mass1 after the collision
+ */
+float oneDimentionalCollisionEquation(float mass1, float velocity1, float mass2,
+                                      float velocity2) {
+  return ((mass1 * velocity1 + mass2 * velocity2 -
+           mass2 * (velocity1 - velocity2) * elasticityConstant) /
+          (mass1 + mass2));
+}
+
+// Structs
+//--------------------------------------------------------------------------------------
 struct ball {
   int radius;  // in pixels
   Vector2 pos; // in pixels
   Vector2 vel; // in pixels per second
   Color color;
+  float mass;
 };
 
 int main() {
@@ -25,15 +54,18 @@ int main() {
       .pos = {.x = ringPos.x, .y = ringPos.y - ringRadius},
       .vel = {20, 0},
       .radius = 10.0,
-      .color = DARKPURPLE};
+      .color = DARKPURPLE,
+      .mass = 2};
   struct ball greenBall = {.pos = {.x = ringPos.x, .y = ringPos.y - ringRadius},
                            .vel = {10, 0},
                            .radius = 10.0,
-                           .color = DARKGREEN};
+                           .color = DARKGREEN,
+                           .mass = 5};
   struct ball redBall = {.pos = {.x = ringPos.x, .y = ringPos.y - ringRadius},
                          .vel = {30, 0},
                          .radius = 10.0,
-                         .color = RED};
+                         .color = RED,
+                         .mass = 10};
   struct ball balls[3] = {purpleBall, greenBall, redBall};
   int ballAmount = 3;
 
@@ -70,26 +102,38 @@ int main() {
     // Iterate over all ball pairs and check if they collide, and if they do
     // update their velocities accordingly.
     for (int i = 0; i < ballAmount; i++) {
-      for (int j = 0; j < ballAmount; i++) {
-        if (i == j)
-          break;
-        // get the distance of the two balls from their centers
+      for (int j = 0; j < i; j++) {
         float ballsDistance = Vector2Distance(balls[i].pos, balls[j].pos);
-        if (ballsDistance <= (balls[i].radius + balls[j].radius)) {
-          // TODO: Implement this stuff
+        if (ballsDistance <= (balls[i].radius + balls[j].radius) &&
+            ballsDistance != 0) {
+          /// A normalized vector pointing from ball i to ball j.
+          Vector2 dir =
+              Vector2Normalize(Vector2Subtract(balls[i].pos, balls[j].pos));
 
-          // push balls away from each other
-          // first get the direction vector with subtraction
+          float dist =
+              (balls[i].radius + balls[j].radius - ballsDistance) / 2.0;
+          /// A vector scaled by the balls distance from each other
+          /// pointing from ball i to ball j.
+          Vector2 posCorrectionDistanceVec = Vector2Scale(dir, dist);
+          balls[i].pos.x += posCorrectionDistanceVec.x;
+          balls[i].pos.y += posCorrectionDistanceVec.y;
+          balls[j].pos.x += -posCorrectionDistanceVec.x;
+          balls[j].pos.y += -posCorrectionDistanceVec.y;
 
-          // then take the dot product of the direction vector and
-          // the velocity vector of the balls to find  the velocity vector
-          // of both balls in the direction of each other
+          float ball1CollVel = Vector2DotProduct(dir, balls[i].vel);
+          float ball2CollVel = Vector2DotProduct(dir, balls[j].vel);
 
-          // plug the resulting velocity vectors into the 1d collision
-          // equation from classical mechanics
+          float ball1AfterCollVel = oneDimentionalCollisionEquation(
+              balls[i].mass, ball1CollVel, balls[j].mass, ball2CollVel);
+          float ball2AfterCollVel = oneDimentionalCollisionEquation(
+              balls[j].mass, ball2CollVel, balls[i].mass, ball1CollVel);
 
-          // finally update the velocities of the balls with that equations
-          // output
+          balls[i].vel =
+              Vector2Add(balls[i].vel,
+                         Vector2Scale(dir, ball1AfterCollVel - ball1CollVel));
+          balls[j].vel =
+              Vector2Add(balls[j].vel,
+                         Vector2Scale(dir, ball2AfterCollVel - ball2CollVel));
         }
       }
     }
